@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurant Ordering System</title>
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    color: #222;
+}
+header {
+    background: #111;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+header h1 {
+    margin-bottom: 5px;
+}
+nav {
+    background: white;
+    padding: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+button {
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #111;
+    color: white;
+}
+button:hover {
+    opacity: 0.8;
+}
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+}
+section {
+    display: none;
+}
+section.active {
+    display: block;
+}
+h2 {
+    margin-bottom: 20px;
+}
+.search {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+.categories {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.categories button {
+    background: #ddd;
+    color: #111;
+}
+.categories button.active {
+    background: #111;
+    color: white;
+}
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.food-image {
+    height: 130px;
+    background: #eee;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 55px;
+    margin-bottom: 12px;
+}
+.card h3 {
+    margin-bottom: 7px;
+}
+.card p {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+.price {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.unavailable {
+    opacity: 0.5;
+}
+.cart-item {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.quantity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.quantity button {
+    padding: 5px 9px;
+}
+.total-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 11px;
+    margin: 7px 0 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+label {
+    font-weight: bold;
+}
+.form-box {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 600px;
+}
+.order-card {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 7px rgba(0,0,0,0.07);
+}
+.order-card h3 {
+    margin-bottom: 8px;
+}
+.order-items {
+    margin: 10px 0;
+}
+.status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+.preparing {
+    background: #cfe2ff;
+    color: #084298;
+}
+.ready {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+.served {
+    background: #ddd;
+    color: #333;
+}
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.stat {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+.stat h3 {
+    font-size: 14px;
+    color: #666;
+}
+.stat p {
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+.admin-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+}
+.hidden {
+    display: none;
+}
+.empty {
+    text-align: center;
+    padding: 30px;
+    color: #777;
+}
+footer {
+    margin-top: 40px;
+    padding: 20px;
+    text-align: center;
+    color: #777;
+}
+@media(max-width:600px) {
+    nav {
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+    .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .admin-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+</head>
+<body>
+<header>
+    <h1>My Restaurant</h1>
+    <p>Restaurant Ordering System</p>
+</header>
+<nav>
+    <button onclick="showSection('customer')">Customer</button>
+    <button onclick="showSection('cart')">Cart</button>
+    <button onclick="showSection('tracking')">My Order</button>
+    <button onclick="showSection('staff')">Staff</button>
+    <button onclick="showSection('admin')">Admin</button>
+</nav>
+<div class="container">
+<!-- ================= CUSTOMER ================= -->
+<section id="customer" class="active">
+<h2>Menu</h2>
+<input
+    type="text"
+    id="search"
+    class="search"
+    placeholder="Search food..."
+    oninput="renderMenu()"
+>
+<div class="categories">
+    <button class="active" onclick="setCategory('All', this)">All</button>
+    <button onclick="setCategory('Meals', this)">Meals</button>
+    <button onclick="setCategory('Snacks', this)">Snacks</button>
+    <button onclick="setCategory('Drinks', this)">Drinks</button>
+    <button onclick="setCategory('Desserts', this)">Desserts</button>
+</div>
+<div id="menu" class="menu-grid"></div>
+</section>
+<!-- ================= CART ================= -->
+<section id="cart">
+<h2>Your Cart</h2>
+<div id="cartItems"></div>
+<div class="total-box">
+    <h3>
+        Total: ₱<span id="cartTotal">0</span>
+    </h3>
+    <br>
+    <button onclick="showSection('checkout')">
+        Proceed to Checkout
+    </button>
+</div>
+</section>
+<!-- ================= CHECKOUT ================= -->
+<section id="checkout">
+<h2>Checkout</h2>
+<div class="form-box">
+    <label>Customer Name</label>
+    <input
+        id="customerName"
+        type="text"
+        placeholder="Optional"
+    >
+    <label>Table Number</label>
+    <input
+        id="tableNumber"
+        type="number"
+        placeholder="Example: 5"
+    >
+    <label>Order Type</label>
+    <select id="orderType">
+        <option value="Dine-in">Dine-in</option>
+        <option value="Takeout">Takeout</option>
+    </select>
+    <label>Special Instructions</label>
+    <textarea
+        id="instructions"
+        placeholder="Example: No onions"
+    ></textarea>
+    <button onclick="placeOrder()">
+        Place Order
+    </button>
+</div>
+</section>
+<!-- ================= TRACKING ================= -->
+<section id="tracking">
+<h2>Order Tracking</h2>
+<div id="trackingContainer"></div>
+</section>
+<!-- ================= STAFF ================= -->
+<section id="staff">
+<h2>Kitchen / Staff Dashboard</h2>
+<div class="dashboard-grid">
+    <div class="stat">
+        <h3>Pending</h3>
+        <p id="pendingCount">0</p>
+    </div>
+    <div class="stat">
+        <h3>Preparing</h3>
+        <p id="preparingCount">0</p>
+    </div>
+    <div class="stat">
+        <h3>Ready</h3>
+        <p id="readyCount">0</p>
+    </div>
+</div>
+<div id="staffOrders"></div>
+</section>
+<!-- ================= ADMIN ================= -->
+<section id="admin">
+<h2>Admin Dashboard</h2>
+<div class="dashboard-grid">
+    <div class="stat">
+        <h3>Total Orders</h3>
+        <p id="totalOrders">0</p>
+    </div>
+    <div class="stat">
+        <h3>Total Sales</h3>
+        <p>₱<span id="totalSales">0</span></p>
+    </div>
+    <div class="stat">
+        <h3>Menu Items</h3>
+        <p id="menuCount">0</p>
+    </div>
+</div>
+<h2>Manage Menu</h2>
+<div class="form-box">
+    <input
+        id="newName"
+        placeholder="Food name"
+    >
+    <input
+        id="newPrice"
+        type="number"
+        placeholder="Price"
+    >
+    <select id="newCategory">
+        <option value="Meals">Meals</option>
+        <option value="Snacks">Snacks</option>
+        <option value="Drinks">Drinks</option>
+        <option value="Desserts">Desserts</option>
+    </select>
+    <input
+        id="newEmoji"
+        placeholder="Emoji e.g. 🍔"
+    >
+    <input
+        id="newDescription"
+        placeholder="Description"
+    >
+    <button onclick="addMenuItem()">
+        Add Menu Item
+    </button>
+</div>
+<br>
+<div id="adminMenu"></div>
+</section>
+</div>
+<footer>
+    <p>© 2026 My Restaurant</p>
+</footer>
+<script>
+/* ================= DATA ================= */
+let menuItems = JSON.parse(localStorage.getItem("menuItems")) || [
+    {
+        id: 1,
+        name: "Classic Burger",
+        price: 120,
+        category: "Meals",
+        emoji: "🍔",
+        description: "Beef patty with cheese and vegetables.",
+        available: true
+    },
+    {
+        id: 2,
+        name: "Chicken Meal",
+        price: 150,
+        category: "Meals",
+        emoji: "🍗",
+        description: "Fried chicken with rice and gravy.",
+        available: true
+    },
+    {
+        id: 3,
+        name: "French Fries",
+        price: 80,
+        category: "Snacks",
+        emoji: "🍟",
+        description: "Crispy golden fries.",
+        available: true
+    },
+    {
+        id: 4,
+        name: "Soft Drink",
+        price: 50,
+        category: "Drinks",
+        emoji: "🥤",
+        description: "Cold refreshing drink.",
+        available: true
+    },
+    {
+        id: 5,
+        name: "Ice Cream",
+        price: 70,
+        category: "Desserts",
+        emoji: "🍨",
+        description: "Cold creamy ice cream.",
+        available: true
+    }
+];
+let orders =
+    JSON.parse(localStorage.getItem("orders")) || [];
+let cart = [];
+let currentCategory = "All";
+/* ================= NAVIGATION ================= */
+function showSection(id) {
+    document.querySelectorAll("section").forEach(section => {
+        section.classList.remove("active");
+    });
+    document.getElementById(id).classList.add("active");
+    if(id === "cart") {
+        renderCart();
+    }
+    if(id === "tracking") {
+        renderTracking();
+    }
+    if(id === "staff") {
+        renderStaff();
+    }
+    if(id === "admin") {
+        renderAdmin();
+    }
+}
+/* ================= MENU ================= */
+function setCategory(category, button) {
+    currentCategory = category;
+    document.querySelectorAll(".categories button")
+        .forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+    renderMenu();
+}
+function renderMenu() {
+    const menu = document.getElementById("menu");
+    const search =
+        document.getElementById("search")
+        .value.toLowerCase();
+    menu.innerHTML = "";
+    const filtered = menuItems.filter(item => {
+        const matchesCategory =
+            currentCategory === "All" ||
+            item.category === currentCategory;
+        const matchesSearch =
+            item.name.toLowerCase()
+            .includes(search);
+        return matchesCategory && matchesSearch;
+    });
+    filtered.forEach(item => {
+        const card = document.createElement("div");
+        card.className =
+            "card " +
+            (!item.available ? "unavailable" : "");
+        card.innerHTML = `
+            <div class="food-image">
+                ${item.emoji}
+            </div>
+            <h3>${item.name}</h3>
+            <p>${item.description}</p>
+            <div class="price">
+                ₱${item.price}
+            </div>
+            ${
+                item.available
+                ?
+                `<button onclick="addToCart(${item.id})">
+                    Add to Cart
+                </button>`
+                :
+                `<button disabled>
+                    Unavailable
+                </button>`
+            }
+        `;
+        menu.appendChild(card);
+    });
+}
+/* ================= CART ================= */
+function addToCart(id) {
+    const item = menuItems.find(
+        item => item.id === id
+    );
+    if(!item || !item.available) return;
+    const existing =
+        cart.find(item => item.id === id);
+    if(existing) {
+        existing.quantity++;
+    } else {
+        cart.push({
+            ...item,
+            quantity: 1
+        });
+    }
+    renderCart();
+    alert(item.name + " added to cart.");
+}
+function changeQuantity(id, amount) {
+    const item =
+        cart.find(item => item.id === id);
+    if(!item) return;
+    item.quantity += amount;
+    if(item.quantity <= 0) {
+        cart =
+            cart.filter(item => item.id !== id);
+    }
+    renderCart();
+}
+function renderCart() {
+    const container =
+        document.getElementById("cartItems");
+    const totalElement =
+        document.getElementById("cartTotal");
+    container.innerHTML = "";
+    if(cart.length === 0) {
+        container.innerHTML =
+            `<div class="empty">
+                Your cart is empty.
+            </div>`;
+        totalElement.textContent = "0";
+        return;
+    }
+    let total = 0;
+    cart.forEach(item => {
+        const subtotal =
+            item.price * item.quantity;
+        total += subtotal;
+        const div =
+            document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `
+            <div>
+                <strong>${item.name}</strong>
+                <p>
+                    ₱${item.price} ×
+                    ${item.quantity}
+                </p>
+            </div>
+            <div class="quantity">
+                <button
+                    onclick="changeQuantity(${item.id}, -1)">
+                    -
+                </button>
+                <span>
+                    ${item.quantity}
+                </span>
+                <button
+                    onclick="changeQuantity(${item.id}, 1)">
+                    +
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+    totalElement.textContent = total;
+}
+/* ================= CHECKOUT ================= */
+function placeOrder() {
+    if(cart.length === 0) {
+        alert("Your cart is empty.");
+        return;
+    }
+    const name =
+        document.getElementById("customerName").value;
+    const table =
+        document.getElementById("tableNumber").value;
+    const type =
+        document.getElementById("orderType").value;
+    const instructions =
+        document.getElementById("instructions").value;
+    if(type === "Dine-in" && !table) {
+        alert("Please enter your table number.");
+        return;
+    }
+    const total =
+        cart.reduce(
+            (sum, item) =>
+                sum + item.price * item.quantity,
+            0
+        );
+    const order = {
+        id: Date.now(),
+        orderNumber:
+            Math.floor(100 + Math.random() * 900),
+        customerName:
+            name || "Guest",
+        table:
+            table || "-",
+        type: type,
+        instructions:
+            instructions,
+        items:
+            [...cart],
+        total:
+            total,
+        status:
+            "Pending",
+        createdAt:
+            new Date().toLocaleString()
+    };
+    orders.push(order);
+    saveOrders();
+    cart = [];
+    document.getElementById("customerName").value = "";
+    document.getElementById("tableNumber").value = "";
+    document.getElementById("instructions").value = "";
+    alert(
+        "Order placed! Order #" +
+        order.orderNumber
+    );
+    showSection("tracking");
+}
+/* ================= TRACKING ================= */
+function renderTracking() {
+    const container =
+        document.getElementById("trackingContainer");
+    container.innerHTML = "";
+    if(orders.length === 0) {
+        container.innerHTML =
+            `<div class="empty">
+                No orders yet.
+            </div>`;
+        return;
+    }
+    const order =
+        orders[orders.length - 1];
+    container.innerHTML = `
+        <div class="order-card">
+            <h3>
+                Order #${order.orderNumber}
+            </h3>
+            <p>
+                Customer: ${order.customerName}
+            </p>
+            <p>
+                Table: ${order.table}
+            </p>
+            <br>
+            <strong>Status:</strong>
+            <br><br>
+            <span class="status ${order.status.toLowerCase()}">
+                ${order.status}
+            </span>
+            <br><br>
+            <strong>Items</strong>
+            <div class="order-items">
+                ${order.items.map(item => `
+                    <p>
+                        ${item.name}
+                        × ${item.quantity}
+                    </p>
+                `).join("")}
+            </div>
+            <strong>
+                Total: ₱${order.total}
+            </strong>
+        </div>
+    `;
+}
+/* ================= STAFF ================= */
+function renderStaff() {
+    const container =
+        document.getElementById("staffOrders");
+    container.innerHTML = "";
+    let pending = 0;
+    let preparing = 0;
+    let ready = 0;
+    orders.forEach(order => {
+        if(order.status === "Pending")
+            pending++;
+        if(order.status === "Preparing")
+            preparing++;
+        if(order.status === "Ready")
+            ready++;
+        const card =
+            document.createElement("div");
+        card.className = "order-card";
+        card.innerHTML = `
+            <h3>
+                Order #${order.orderNumber}
+            </h3>
+            <p>
+                <strong>Customer:</strong>
+                ${order.customerName}
+            </p>
+            <p>
+                <strong>Table:</strong>
+                ${order.table}
+            </p>
+            <p>
+                <strong>Type:</strong>
+                ${order.type}
+            </p>
+            <p>
+                <strong>Time:</strong>
+                ${order.createdAt}
+            </p>
+            <br>
+            <strong>Items:</strong>
+            <div class="order-items">
+                ${order.items.map(item => `
+                    <p>
+                        ${item.name}
+                        × ${item.quantity}
+                    </p>
+                `).join("")}
+            </div>
+            ${
+                order.instructions
+                ?
+                `<p>
+                    <strong>Instructions:</strong>
+                    ${order.instructions}
+                </p>`
+                :
+                ""
+            }
+            <br>
+            <p>
+                <strong>Total:</strong>
+                ₱${order.total}
+            </p>
+            <br>
+            <span class="status ${order.status.toLowerCase()}">
+                ${order.status}
+            </span>
+            <br><br>
+            ${getNextStatusButton(order)}
+        `;
+        container.appendChild(card);
+    });
+    document.getElementById("pendingCount")
+        .textContent = pending;
+    document.getElementById("preparingCount")
+        .textContent = preparing;
+    document.getElementById("readyCount")
+        .textContent = ready;
+}
+function getNextStatusButton(order) {
+    if(order.status === "Pending") {
+        return `
+            <button onclick="updateOrder(${order.id}, 'Preparing')">
+                Start Preparing
+            </button>
+        `;
+    }
+    if(order.status === "Preparing") {
+        return `
+            <button onclick="updateOrder(${order.id}, 'Ready')">
+                Mark Ready
+            </button>
+        `;
+    }
+    if(order.status === "Ready") {
+        return `
+            <button onclick="updateOrder(${order.id}, 'Served')">
+                Mark Served
+            </button>
+        `;
+    }
+    return "<small>Order completed</small>";
+}
+function updateOrder(id, status) {
+    const order =
+        orders.find(order => order.id === id);
+    if(!order) return;
+    order.status = status;
+    saveOrders();
+    renderStaff();
+}
+/* ================= ADMIN ================= */
+function renderAdmin() {
+    document.getElementById("totalOrders")
+        .textContent = orders.length;
+    const sales =
+        orders.reduce(
+            (sum, order) => sum + order.total,
+            0
+        );
+    document.getElementById("totalSales")
+        .textContent = sales;
+    document.getElementById("menuCount")
+        .textContent = menuItems.length;
+    const container =
+        document.getElementById("adminMenu");
+    container.innerHTML = "";
+    menuItems.forEach(item => {
+        const div =
+            document.createElement("div");
+        div.className = "admin-item";
+        div.innerHTML = `
+            <div>
+                <strong>
+                    ${item.emoji} ${item.name}
+                </strong>
+                <p>
+                    ₱${item.price} |
+                    ${item.category}
+                </p>
+                <small>
+                    ${item.available
+                        ? "Available"
+                        : "Unavailable"}
+                </small>
+            </div>
+            <div>
+                <button
+                    onclick="toggleAvailability(${item.id})">
+                    ${
+                        item.available
+                        ? "Disable"
+                        : "Enable"
+                    }
+                </button>
+                <button
+                    onclick="deleteMenuItem(${item.id})">
+                    Delete
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+/* ================= ADMIN MENU ================= */
+function addMenuItem() {
+    const name =
+        document.getElementById("newName").value;
+    const price =
+        Number(
+            document.getElementById("newPrice").value
+        );
+    const category =
+        document.getElementById("newCategory").value;
+    const emoji =
+        document.getElementById("newEmoji").value || "🍽️";
+    const description =
+        document.getElementById("newDescription").value;
+    if(!name || !price) {
+        alert("Enter the item name and price.");
+        return;
+    }
+    const item = {
+        id: Date.now(),
+        name: name,
+        price: price,
+        category: category,
+        emoji: emoji,
+        description:
+            description || "Delicious food.",
+        available: true
+    };
+    menuItems.push(item);
+    saveMenu();
+    document.getElementById("newName").value = "";
+    document.getElementById("newPrice").value = "";
+    document.getElementById("newEmoji").value = "";
+    document.getElementById("newDescription").value = "";
+    renderAdmin();
+    renderMenu();
+}
+function toggleAvailability(id) {
+    const item =
+        menuItems.find(item => item.id === id);
+    if(!item) return;
+    item.available =
+        !item.available;
+    saveMenu();
+    renderAdmin();
+    renderMenu();
+}
+function deleteMenuItem(id) {
+    if(!confirm("Delete this menu item?"))
+        return;
+    menuItems =
+        menuItems.filter(item => item.id !== id);
+    saveMenu();
+    renderAdmin();
+    renderMenu();
+}
+/* ================= STORAGE ================= */
+function saveMenu() {
+    localStorage.setItem(
+        "menuItems",
+        JSON.stringify(menuItems)
+    );
+}
+function saveOrders() {
+    localStorage.setItem(
+        "orders",
+        JSON.stringify(orders)
+    );
+}
+/* ================= START ================= */
+renderMenu();
+renderCart();
+</script>
+</body>
+</html>
